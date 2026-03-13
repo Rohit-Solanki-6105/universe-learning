@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "raymath.h"
 #include "screen.h"
 #include "atom.h"
 #include <cstdlib>
@@ -16,6 +17,39 @@ int main() {
         // --- TOGGLE STATE ---
         if (IsKeyPressed(KEY_SPACE)) {
             atom.observed = !atom.observed;
+        }
+
+        // --- CUSTOM CAMERA HANDLING (RIGHT-CLICK DRAG & ZOOM) ---
+        // Overrides the screen.cpp camera completely
+        if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+            Vector2 delta = GetMouseDelta();
+            float sens = 0.005f;
+            
+            // Get vector from center to camera
+            Vector3 v = Vector3Subtract(screen.camera.position, screen.camera.target);
+            
+            // Yaw (Rotate horizontally around Y axis)
+            Matrix rotY = MatrixRotateY(-delta.x * sens);
+            v = Vector3Transform(v, rotY);
+            
+            // Pitch (Rotate vertically)
+            Vector3 right = Vector3Normalize(Vector3CrossProduct(screen.camera.up, v));
+            Matrix rotPitch = MatrixRotate(right, -delta.y * sens);
+            v = Vector3Transform(v, rotPitch);
+            
+            screen.camera.position = Vector3Add(screen.camera.target, v);
+        }
+
+        // Mouse scroll to zoom in/out
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0.0f) {
+            Vector3 v = Vector3Subtract(screen.camera.position, screen.camera.target);
+            float len = Vector3Length(v);
+            len -= wheel * 2.5f; 
+            if (len < 2.0f) len = 2.0f; 
+            
+            v = Vector3Scale(Vector3Normalize(v), len);
+            screen.camera.position = Vector3Add(screen.camera.target, v);
         }
 
         // --- KEYBOARD INPUT FOR ATOMIC NUMBER ---
@@ -40,12 +74,10 @@ int main() {
             int newZ = atoi(atom.inputBuf);
             if (newZ > 0) {
                 int newN = (newZ <= 20) ? newZ : (int)(newZ * 1.3f);
-                atom.create(newZ, newN); // Generates classical AND quantum layers
+                atom.create(newZ, newN); 
             }
         }
 
-        // --- UPDATES ---
-        screen.update();
         atom.update();
 
         // --- DRAWING ---
@@ -53,11 +85,13 @@ int main() {
             ClearBackground({5, 5, 10, 255}); 
 
             BeginMode3D(screen.camera);
-                DrawGrid(20, 1.0f);
+                DrawGrid(30, 1.0f);
                 atom.draw();
             EndMode3D();
 
             atom.drawHUD();
+            
+            DrawText("Right-Click & Drag to Orbit | Mouse Wheel to Zoom", 400, 770, 16, GRAY);
             DrawFPS(1100, 10);
         EndDrawing();
     }
