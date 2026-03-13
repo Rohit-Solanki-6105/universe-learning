@@ -13,28 +13,23 @@ int main() {
     screen.init();
 
     while (!WindowShouldClose()) {
+        
         if (IsKeyPressed(KEY_F11)) {
             ToggleFullscreen();
         }
-        
-        // --- TOGGLE STATE ---
+
         if (IsKeyPressed(KEY_SPACE)) {
             atom.observed = !atom.observed;
         }
 
-        // --- CUSTOM CAMERA HANDLING (RIGHT-CLICK DRAG & ZOOM) ---
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             Vector2 delta = GetMouseDelta();
             float sens = 0.005f;
             
-            // Get vector from center to camera
             Vector3 v = Vector3Subtract(screen.camera.position, screen.camera.target);
-            
-            // Yaw (Rotate horizontally around Y axis)
             Matrix rotY = MatrixRotateY(-delta.x * sens);
             v = Vector3Transform(v, rotY);
             
-            // Pitch (Rotate vertically)
             Vector3 right = Vector3Normalize(Vector3CrossProduct(screen.camera.up, v));
             Matrix rotPitch = MatrixRotate(right, -delta.y * sens);
             v = Vector3Transform(v, rotPitch);
@@ -42,7 +37,6 @@ int main() {
             screen.camera.position = Vector3Add(screen.camera.target, v);
         }
 
-        // Mouse scroll to zoom in/out
         float wheel = GetMouseWheelMove();
         if (wheel != 0.0f) {
             Vector3 v = Vector3Subtract(screen.camera.position, screen.camera.target);
@@ -54,7 +48,6 @@ int main() {
             screen.camera.position = Vector3Add(screen.camera.target, v);
         }
 
-        // --- KEYBOARD INPUT FOR ATOMIC NUMBER ---
         int key = GetCharPressed();
         while (key > 0) {
             if ((key >= '0') && (key <= '9') && (atom.letterCount < 3)) {
@@ -82,19 +75,18 @@ int main() {
 
         atom.update();
 
-        // --- DRAWING ---
         BeginDrawing();
             ClearBackground({5, 5, 10, 255}); 
 
             BeginMode3D(screen.camera);
                 DrawGrid(30, 1.0f);
-                atom.draw();
+                atom.draw(screen.camera); // <-- PASSED THE CAMERA HERE!
             EndMode3D();
 
             atom.drawHUD();
             
-            DrawText("Right-Click & Drag to Orbit | Mouse Wheel to Zoom", 400, 770, 16, GRAY);
-            DrawFPS(1100, 10);
+            DrawText("Right-Click & Drag to Orbit | Mouse Wheel to Zoom | F11 for Fullscreen", 350, GetScreenHeight() - 30, 16, GRAY);
+            DrawFPS(GetScreenWidth() - 100, 10);
         EndDrawing();
     }
 

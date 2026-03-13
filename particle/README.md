@@ -34,7 +34,9 @@ When the simulator is in the **Quantum State** (toggle using `Spacebar`), an int
 ![Visual](./visual.png) 
 
 
-![Visual](./quantum.png) 
+![Visual](./quantumCloud.png)
+ 
+![Visual](./quantumCloud2.png) 
 
 ## 1. Classical Mechanics (Bohr Model)
 When the simulator is in the "Observed" state, it renders particles as distinct physical spheres using the Bohr Model.

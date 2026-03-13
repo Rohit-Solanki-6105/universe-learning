@@ -11,7 +11,6 @@ Atom::Atom() {
     observed = false; 
     timePhase = 0.0f;
     
-    // Default to a beautiful f-orbital (n=4, l=3, m=0) to show off the rings and lobes
     n = 4;
     l = 3;
     m = 0;
@@ -112,12 +111,12 @@ void Atom::generateQuantumCloud() {
     quantumCloud.clear();
     cloudProbabilities.clear();
     
-    int targetPoints = 150000; 
+    // REDUCED: Much lower particle count for incredibly smooth performance!
+    int targetPoints = 30000; 
     int pointsGenerated = 0;
     float maxR = n * n * 2.0f; 
     float maxProb = 0.0f;
 
-    // Phase 1: Cartesian Grid Search for true maximum probability
     for(int i=0; i<80000; i++) {
         float x = (float)GetRandomValue(-1000, 1000) / 1000.0f * maxR;
         float y = (float)GetRandomValue(-1000, 1000) / 1000.0f * maxR;
@@ -131,7 +130,6 @@ void Atom::generateQuantumCloud() {
         if (p > maxProb) maxProb = p;
     }
 
-    // Phase 2: Uniform Cartesian Rejection Sampling (Fixes the blobby polar clustering!)
     while (pointsGenerated < targetPoints) {
         float x = (float)GetRandomValue(-1000, 1000) / 1000.0f * maxR;
         float y = (float)GetRandomValue(-1000, 1000) / 1000.0f * maxR;
@@ -145,13 +143,13 @@ void Atom::generateQuantumCloud() {
         
         float prob = calculateProbability(r, theta, phi);
         
-        // Gamma correction to puff up the thin outer lobes
-        float visualProb = powf(prob / maxProb, 0.4f); 
+        // ADJUSTED: Using 0.3f forces more particles into the thinner/outer lobes, making it look much denser overall
+        float visualProb = powf(prob / maxProb, 0.3f); 
         float randVal = (float)GetRandomValue(0, 1000) / 1000.0f;
 
         if (randVal < visualProb) {
             quantumCloud.push_back({x, y, z});
-            cloudProbabilities.push_back(prob / maxProb); // Store true normalized heat
+            cloudProbabilities.push_back(prob / maxProb); 
             pointsGenerated++;
         }
     }
@@ -170,9 +168,8 @@ void Atom::update() {
     }
 }
 
-void Atom::draw() {
+void Atom::draw(Camera3D camera) {
     if (observed) {
-        // CLASSICAL VIEW
         DrawSphereWires({0, 0, 0}, 0.5f + (atomicNumber * 0.015f), 12, 12, Fade(GOLD, 0.3f));
         for (const auto &p : protons) DrawSphere(p.position, 0.12f, RED);
         for (const auto &n : neutrons) DrawSphere(n.position, 0.12f, GRAY);
@@ -194,55 +191,57 @@ void Atom::draw() {
             DrawSphereWires(e.position, 0.12f, 6, 6, Fade(WHITE, 0.5f));
         }
     } else {
-        // ==========================================
-        // QUANTUM VIEW (STATIC CLOUD)
-        // ==========================================
+        float L = n * n * 2.0f; 
         
-        float L = n * n * 2.0f; // Visual bounds for the clipping wireframes
-        
-        // Draw the 3 Intersecting Clipping Squares (Just like your images!)
         if (clipX > -L || clipY > -L || clipZ > -L) {
             Color lineCol = Fade(WHITE, 0.3f);
-            // X Plane
             DrawLine3D({clipX, -L, -L}, {clipX, L, -L}, lineCol); DrawLine3D({clipX, L, -L}, {clipX, L, L}, lineCol);
             DrawLine3D({clipX, L, L}, {clipX, -L, L}, lineCol);   DrawLine3D({clipX, -L, L}, {clipX, -L, -L}, lineCol);
-            // Y Plane
             DrawLine3D({-L, clipY, -L}, {L, clipY, -L}, lineCol); DrawLine3D({L, clipY, -L}, {L, clipY, L}, lineCol);
             DrawLine3D({L, clipY, L}, {-L, clipY, L}, lineCol);   DrawLine3D({-L, clipY, L}, {-L, clipY, -L}, lineCol);
-            // Z Plane
             DrawLine3D({-L, -L, clipZ}, {L, -L, clipZ}, lineCol); DrawLine3D({L, -L, clipZ}, {L, L, clipZ}, lineCol);
             DrawLine3D({L, L, clipZ}, {-L, L, clipZ}, lineCol);   DrawLine3D({-L, L, clipZ}, {-L, -L, clipZ}, lineCol);
         }
 
-        rlPushMatrix();
+        Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+        Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, camera.up));
+        Vector3 up = Vector3CrossProduct(right, forward);
+
         BeginBlendMode(BLEND_ADDITIVE);
         rlBegin(RL_QUADS); 
         
         for (size_t i = 0; i < quantumCloud.size(); i++) {
             Vector3 p = quantumCloud[i];
 
-            // REMOVE 1/8th of the atom exactly like the reference image
             if (p.x > clipX && p.y > clipY && p.z > clipZ) continue;
 
             float prob = cloudProbabilities[i] * colorScale;
-            float intensity = powf(prob, 0.3f); // Maps colors beautifully
+            float intensity = powf(prob, 0.3f); 
             
-            if (intensity > 0.8f)      rlColor4ub(255, 255, 200, 200); // Core White/Yellow
-            else if (intensity > 0.5f) rlColor4ub(255, 150,  50, 180); // Mid Orange/Pink
-            else if (intensity > 0.2f) rlColor4ub(200,  50, 150, 150); // Magenta Edge
-            else                       rlColor4ub(100,  10, 150,  80); // Purple Dust
+            // INCREASED ALPHA: Colors are brighter so they accumulate faster, glowing intensely
+            if (intensity > 0.8f)      rlColor4ub(255, 255, 200, 220); 
+            else if (intensity > 0.5f) rlColor4ub(255, 150,  50, 200); 
+            else if (intensity > 0.2f) rlColor4ub(200,  50, 150, 180); 
+            else                       rlColor4ub(100,  10, 150, 120); 
 
-            // Draw a tiny billboard square
-            float s = 0.04f;
-            rlVertex3f(p.x - s, p.y - s, p.z);
-            rlVertex3f(p.x + s, p.y - s, p.z);
-            rlVertex3f(p.x + s, p.y + s, p.z);
-            rlVertex3f(p.x - s, p.y + s, p.z);
+            // INCREASED SIZE: Tripled from 0.04f to 0.12f. 
+            // Because there are fewer particles, making them larger makes them overlap massively,
+            // creating thick, soft, glowing spheres of energy.
+            float s = 0.12f; 
+
+            Vector3 bl = { p.x - right.x*s - up.x*s, p.y - right.y*s - up.y*s, p.z - right.z*s - up.z*s };
+            Vector3 br = { p.x + right.x*s - up.x*s, p.y + right.y*s - up.y*s, p.z + right.z*s - up.z*s };
+            Vector3 tr = { p.x + right.x*s + up.x*s, p.y + right.y*s + up.y*s, p.z + right.z*s + up.z*s };
+            Vector3 tl = { p.x - right.x*s + up.x*s, p.y - right.y*s + up.y*s, p.z - right.z*s + up.z*s };
+
+            rlVertex3f(bl.x, bl.y, bl.z);
+            rlVertex3f(br.x, br.y, br.z);
+            rlVertex3f(tr.x, tr.y, tr.z);
+            rlVertex3f(tl.x, tl.y, tl.z);
         }
         
         rlEnd();
         EndBlendMode();
-        rlPopMatrix();
     }
 }
 

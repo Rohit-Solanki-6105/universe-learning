@@ -17,7 +17,6 @@ struct Electron {
 
 class Atom {
 public:
-    // --- CLASSICAL DATA ---
     int atomicNumber;
     int neutronCount;
     std::vector<Particle> protons;
@@ -26,35 +25,28 @@ public:
     char inputBuf[8]; 
     int letterCount;
 
-    // --- QUANTUM NUMBERS ---
-    int n; // Principal (Size/Energy)
-    int l; // Azimuthal (Shape)
-    int m; // Magnetic (Orientation)
-
-    // --- VISUAL CONTROLS ---
+    int n; 
+    int l; 
+    int m; 
     float colorScale;
     float clipX;
     float clipY;
     float clipZ;
 
-    // --- STATE & DATA ---
     bool observed;
     float timePhase;
     std::vector<Vector3> quantumCloud;
     std::vector<float> cloudProbabilities;
 
-    // --- UI INTERACTION ---
-    int activeUIField; // 0=None, 1=n, 2=l, 3=m, 4=Color, 5=ClipX, 6=ClipY, 7=ClipZ
+    int activeUIField; 
 
     Atom();
     
-    // Core Functions
     void create(int Z, int N);
     void update();
-    void draw();
+    void draw(Camera3D camera); // <-- UPDATED TO TAKE CAMERA
     void drawHUD();
 
-    // Quantum Math
     float legendreP(int l, int m, float x);
     float laguerreL(int n, int l, float x);
     float calculateProbability(float r, float theta, float phi);
