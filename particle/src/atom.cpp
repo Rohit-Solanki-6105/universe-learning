@@ -195,7 +195,7 @@ void Atom::draw() {
         }
     } else {
         // ==========================================
-        // QUANTUM VIEW (STATIC CLOUD WITH PROPER CUTAWAY)
+        // QUANTUM VIEW (STATIC CLOUD)
         // ==========================================
         
         float L = n * n * 2.0f; // Visual bounds for the clipping wireframes

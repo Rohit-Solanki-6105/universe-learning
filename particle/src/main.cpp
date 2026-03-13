@@ -13,6 +13,9 @@ int main() {
     screen.init();
 
     while (!WindowShouldClose()) {
+        if (IsKeyPressed(KEY_F11)) {
+            ToggleFullscreen();
+        }
         
         // --- TOGGLE STATE ---
         if (IsKeyPressed(KEY_SPACE)) {
@@ -20,7 +23,6 @@ int main() {
         }
 
         // --- CUSTOM CAMERA HANDLING (RIGHT-CLICK DRAG & ZOOM) ---
-        // Overrides the screen.cpp camera completely
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             Vector2 delta = GetMouseDelta();
             float sens = 0.005f;

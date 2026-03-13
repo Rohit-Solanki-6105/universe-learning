@@ -1,76 +1,30 @@
-# Particle Simulator Controls
+# Quantum Atomic Structure Simulator - Controls
 
-This document describes all keyboard and mouse controls used in the 3D particle simulation environment.
+Welcome to the interactive Quantum Atom Simulator. Below is the complete list of keyboard and mouse controls available to interact with the application.
 
----
+## ⌨️ Keyboard Controls
 
-# Display Controls
+| Key | Action | Description |
+| :--- | :--- | :--- |
+| **0 - 9** | Type Atomic Number | Enter the atomic number (Z) of the element you wish to build (e.g., `1` for Hydrogen, `6` for Carbon, `79` for Gold). |
+| **Backspace** | Delete Digit | Deletes the last typed digit in the Atomic Number input box. |
+| **Enter** | Build Atom | Applies the typed atomic number and instantly generates the corresponding atom and electron shells. |
+| **Spacebar** | Toggle Quantum State | Switches the view between the **Classical State** (Bohr model with solid particles) and the **Quantum State** (Schrödinger wave probability cloud). |
+| **F11** | Toggle Fullscreen | Switches the application window in and out of borderless fullscreen mode. |
+| **Esc** | Exit | Closes the simulator application. |
 
-| Key     | Action                     |
-| ------- | -------------------------- |
-| **F11** | Toggle fullscreen mode     |
-| **TAB** | Lock / Unlock mouse cursor |
-| **ESC** | Exit application           |
+## 🖱️ Mouse Controls
 
----
+### Camera & Navigation (3D View)
+* **Right-Click & Drag**: Orbit the camera. Hold down the right mouse button and move the mouse to rotate your view 360 degrees around the atomic core.
+* **Scroll Wheel**: Zoom in and out. Scroll up to zoom closer to the nucleus, and scroll down to pull back and see the outer electron shells or broader probability cloud.
 
-# Camera Movement
+### UI Interaction (Quantum State Only)
+When the simulator is in the **Quantum State** (toggle using `Spacebar`), an interactive HUD appears on the left side of the screen allowing you to manipulate the mathematical wave function.
 
-| Key       | Action                  |
-| --------- | ----------------------- |
-| **W**     | Move camera forward     |
-| **S**     | Move camera backward    |
-| **A**     | Move camera left        |
-| **D**     | Move camera right       |
-| **Q**     | Move camera upward      |
-| **E**     | Move camera downward    |
-| **Shift** | Increase movement speed |
-| **Ctrl**  | Decrease movement speed |
-
----
-
-# Mouse Controls
-
-| Input                   | Action              |
-| ----------------------- | ------------------- |
-| **Mouse Move**          | Rotate camera view  |
-| **Mouse Wheel**         | Zoom in / out       |
-| **Right Mouse Button**  | Free look camera    |
-| **Middle Mouse Button** | Pan camera          |
-| **ALT + Left Mouse**    | Orbit around target |
-
----
-
-# Camera Utilities
-
-| Key   | Action                 |
-| ----- | ---------------------- |
-| **R** | Reset camera position  |
-| **F** | Focus camera on origin |
-
----
-
-# Simulation Controls
-
-| Key       | Action                    |
-| --------- | ------------------------- |
-| **Space** | Pause / Resume simulation |
-
----
-
-
-# Recommended Workflow
-
-1. Press **TAB** to lock the mouse and enter navigation mode.
-2. Use **WASD** to move through the 3D space.
-3. Use **ALT + Mouse** to orbit around atoms.
-4. Use **Mouse Wheel** to zoom into particle structures.
-5. Press **Space** to pause the simulation for observation.
-
----
-
-# Notes
-
-* Cursor must be **locked (TAB)** to control the camera.
-* Unlock the cursor when interacting with external UI or system windows.
-* Fullscreen can be toggled at any time using **F11**.
+* **Left-Click & Drag Sliders**: 
+    * **`n` (Principal Quantum Number)**: Defines the overall size and energy level of the orbital (Range: 1 to 7).
+    * **`l` (Azimuthal Quantum Number)**: Defines the shape/subshell of the orbital ($s, p, d, f$). Automatically constrained to never exceed $n-1$.
+    * **`m` (Magnetic Quantum Number)**: Defines the 3D orientation of the orbital's lobes. Automatically constrained between $-l$ and $+l$.
+    * **Color Scale**: Adjusts the visual intensity and brightness mapping of the probability cloud.
+    * **Clipping Planes (X, Y, Z)**: Drag these sliders to slice through the 3D probability cloud dynamically. Setting them to `0` cuts a perfect quarter-section out of the atom to view the inner core layers.
