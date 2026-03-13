@@ -28,3 +28,10 @@ When the simulator is in the **Quantum State** (toggle using `Spacebar`), an int
     * **`m` (Magnetic Quantum Number)**: Defines the 3D orientation of the orbital's lobes. Automatically constrained between $-l$ and $+l$.
     * **Color Scale**: Adjusts the visual intensity and brightness mapping of the probability cloud.
     * **Clipping Planes (X, Y, Z)**: Drag these sliders to slice through the 3D probability cloud dynamically. Setting them to `0` cuts a perfect quarter-section out of the atom to view the inner core layers.
+
+## Screen shots
+
+![Visual](./visual.png) 
+
+
+![Visual](./quantum.png) 
