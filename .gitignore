@@ -3,3 +3,7 @@
 *.code-workspace
 *.exe
 .vscode/*
+.env
+.agent
+*/agent
+.agent/*

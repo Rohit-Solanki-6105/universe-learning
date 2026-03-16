@@ -149,7 +149,7 @@ void Atom::generateQuantumCloud() {
 
         if (randVal < visualProb) {
             quantumCloud.push_back({x, y, z});
-            cloudProbabilities.push_back(prob / maxProb); 
+            cloudProbabilities.push_back(visualProb); // Store precomputed power for efficiency
             pointsGenerated++;
         }
     }
@@ -207,6 +207,18 @@ void Atom::draw(Camera3D camera) {
         Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, camera.up));
         Vector3 up = Vector3CrossProduct(right, forward);
 
+        // Precompute billboard offsets and color scales for performance
+        float s = 0.12f;
+        float rxS = right.x * s, ryS = right.y * s, rzS = right.z * s;
+        float uxS = up.x * s,    uyS = up.y * s,    uzS = up.z * s;
+
+        float bl_x = -rxS - uxS, bl_y = -ryS - uyS, bl_z = -rzS - uzS;
+        float br_x =  rxS - uxS, br_y =  ryS - uyS, br_z =  rzS - uzS;
+        float tr_x =  rxS + uxS, tr_y =  ryS + uyS, tr_z =  rzS + uzS;
+        float tl_x = -rxS + uxS, tl_y = -ryS + uyS, tl_z = -rzS + uzS;
+        
+        float colorScalePow = powf(colorScale, 0.3f);
+
         BeginBlendMode(BLEND_ADDITIVE);
         rlBegin(RL_QUADS); 
         
@@ -215,8 +227,7 @@ void Atom::draw(Camera3D camera) {
 
             if (p.x > clipX && p.y > clipY && p.z > clipZ) continue;
 
-            float prob = cloudProbabilities[i] * colorScale;
-            float intensity = powf(prob, 0.3f); 
+            float intensity = cloudProbabilities[i] * colorScalePow; 
             
             // INCREASED ALPHA: Colors are brighter so they accumulate faster, glowing intensely
             if (intensity > 0.8f)      rlColor4ub(255, 255, 200, 220); 
@@ -224,20 +235,10 @@ void Atom::draw(Camera3D camera) {
             else if (intensity > 0.2f) rlColor4ub(200,  50, 150, 180); 
             else                       rlColor4ub(100,  10, 150, 120); 
 
-            // INCREASED SIZE: Tripled from 0.04f to 0.12f. 
-            // Because there are fewer particles, making them larger makes them overlap massively,
-            // creating thick, soft, glowing spheres of energy.
-            float s = 0.12f; 
-
-            Vector3 bl = { p.x - right.x*s - up.x*s, p.y - right.y*s - up.y*s, p.z - right.z*s - up.z*s };
-            Vector3 br = { p.x + right.x*s - up.x*s, p.y + right.y*s - up.y*s, p.z + right.z*s - up.z*s };
-            Vector3 tr = { p.x + right.x*s + up.x*s, p.y + right.y*s + up.y*s, p.z + right.z*s + up.z*s };
-            Vector3 tl = { p.x - right.x*s + up.x*s, p.y - right.y*s + up.y*s, p.z - right.z*s + up.z*s };
-
-            rlVertex3f(bl.x, bl.y, bl.z);
-            rlVertex3f(br.x, br.y, br.z);
-            rlVertex3f(tr.x, tr.y, tr.z);
-            rlVertex3f(tl.x, tl.y, tl.z);
+            rlVertex3f(p.x + bl_x, p.y + bl_y, p.z + bl_z);
+            rlVertex3f(p.x + br_x, p.y + br_y, p.z + br_z);
+            rlVertex3f(p.x + tr_x, p.y + tr_y, p.z + tr_z);
+            rlVertex3f(p.x + tl_x, p.y + tl_y, p.z + tl_z);
         }
         
         rlEnd();
